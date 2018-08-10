@@ -2,9 +2,11 @@
     if (typeof module !== 'undefined') {
         BN = module.require('bn.js')
         randomBytes = module.require('crypto').randomBytes
-    }
-    else {
+        module.exports = exports
+    } else {
+        // bn.js must have been included by the main html file
         randomBytes = length => window.crypto.getRandomValues(new Uint8Array(length))
+        window.Secp256k1 = exports = {}
     }
 
     function uint256(x, base) {
@@ -236,11 +238,6 @@
         return sigr.eq(r[0])
     }
 
-    if (typeof module !== 'undefined') {
-        module.exports = exports = {}
-    } else {
-        var exports = window.Secp256k1 = {}
-    }
     exports.uint256 = uint256
     exports.ecsign = ecsign
     exports.ecrecover = ecrecover
