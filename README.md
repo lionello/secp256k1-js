@@ -1,4 +1,6 @@
 # secp256k1-js
+[![CircleCI](https://circleci.com/gh/enumatech/secp256k1-js.svg?style=svg)](https://circleci.com/gh/enumatech/secp256k1-js)
+
 Pure JS implementation of secp256k1 signing, verification, recovery ECDSA.
 
 The code works as-is both in browsers and NodeJS, without the need of a bundler.
