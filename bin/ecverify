@@ -1,0 +1,16 @@
+#!/usr/bin/env node
+const Secp256k1 = require('../src/secp256k1')
+
+if (process.argv.length < 7) {
+  console.log(`Usage: ecverify PUBKEY_X PUBKEY_Y SIG_R SIG_S HASH`)
+  return
+}
+
+const pubX = Secp256k1.uint256(process.argv[2], 16)
+const pubY = Secp256k1.uint256(process.argv[3], 16)
+const r = Secp256k1.uint256(process.argv[4], 16)
+const s = Secp256k1.uint256(process.argv[5], 16)
+const z = Secp256k1.uint256(process.argv[6], 16)
+
+const result = Secp256k1.ecverify(pubX, pubY, r, s, z)
+console.log(result)
