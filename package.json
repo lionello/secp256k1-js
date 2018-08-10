@@ -4,7 +4,7 @@
   "description": "Pure JS implementation of secp256k1 signing, verification, recovery ECDSA.",
   "main": "src/secp256k1.js",
   "scripts": {
-    "test": "node_modules/.bin/mocha test"
+    "test": "mocha test"
   },
   "repository": {
     "type": "git",
