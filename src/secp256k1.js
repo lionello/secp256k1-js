@@ -2,7 +2,6 @@
     if (typeof module !== 'undefined') {
         BN = module.require('bn.js')
         randomBytes = module.require('crypto').randomBytes
-        module.exports = exports
     } else {
         // bn.js must have been included by the main html file
         randomBytes = length => window.crypto.getRandomValues(new Uint8Array(length))
