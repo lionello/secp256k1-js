@@ -1,5 +1,5 @@
 {
-  "name": "@lionello/secp256k1-js",
+  "name": "@enumatech/secp256k1-js",
   "version": "1.0.0",
   "description": "Pure JS implementation of secp256k1 signing, verification, recovery ECDSA.",
   "main": "src/secp256k1.js",
