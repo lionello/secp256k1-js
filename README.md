@@ -5,6 +5,16 @@ Pure JS implementation of secp256k1 signing, verification, recovery ECDSA.
 
 The code works as-is both in browsers and NodeJS, without the need of a bundler.
 
+## Usage
+```sh
+npm install @enumatech/secp256k1-js
+```
+or
+```html
+<script src="https://unpkg.com/@enumatech/secp256k1-js@1.0.0/src/secp256k1.js" type="text/javascript"></script>
+```
+
+## Development
 ```sh
 npm install
 npm test
