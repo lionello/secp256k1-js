@@ -11,6 +11,7 @@ npm install @enumatech/secp256k1-js
 ```
 or
 ```html
+<script src="https://unpkg.com/bn.js@4.11.8/lib/bn.js" type="text/javascript"></script>
 <script src="https://unpkg.com/@enumatech/secp256k1-js@1.0.0/src/secp256k1.js" type="text/javascript"></script>
 ```
 
