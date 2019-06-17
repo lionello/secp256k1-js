@@ -5,7 +5,7 @@
     } else {
         // bn.js must have been included by the main html file
         randomBytes = length => window.crypto.getRandomValues(new Uint8Array(length))
-        window.Secp256k1 = exports = {}
+        window.Secp256r1 = exports = {}
     }
 
     function uint256(x, base) {
@@ -16,12 +16,12 @@
         return uint256(randomBytes(32)).umod(P)//TODO red
     }
 
-    const A  = uint256(0)
-    const B  = uint256(7)
-    const GX = uint256("79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798", 16)
-    const GY = uint256("483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8", 16)
-    const P  = uint256("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F", 16)
-    const N  = uint256("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16)
+    const A  = uint256("ffffffff00000001000000000000000000000000fffffffffffffffffffffffc", 16)
+    const B  = uint256("5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b", 16)
+    const GX = uint256("6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296", 16)
+    const GY = uint256("4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5", 16)
+    const P  = uint256("ffffffff00000001000000000000000000000000ffffffffffffffffffffffff", 16)
+    const N  = uint256("ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551", 16)
     //const RED = BN.red(P)
     const _0 = uint256(0)
     const _1 = uint256(1)

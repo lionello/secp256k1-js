@@ -1,26 +1,25 @@
 {
-  "name": "@enumatech/secp256k1-js",
+  "name": "@trustedkey/secp256r1-js",
   "version": "1.0.0",
-  "description": "Pure JS implementation of secp256k1 signing, verification, recovery ECDSA.",
-  "main": "src/secp256k1.js",
+  "description": "Pure JS implementation of secp256r1 signing, verification, recovery ECDSA.",
+  "main": "src/secp256r1.js",
   "scripts": {
     "test": "mocha test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/enumatech/secp256k1-js.git"
+    "url": "git+https://github.com/trustedkey/secp256r1-js.git"
   },
   "keywords": [],
   "author": "Lionello Lunesu",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/enumatech/secp256k1-js/issues"
+    "url": "https://github.com/trustedkey/secp256r1-js/issues"
   },
-  "homepage": "https://github.com/enumatech/secp256k1-js#readme",
+  "homepage": "https://github.com/trustedkey/secp256r1-js#readme",
   "devDependencies": {
     "chai": "^4.1.2",
-    "mocha": "^5.1.1",
-    "secp256k1": "^3.5.0"
+    "mocha": "^5.1.1"
   },
   "dependencies": {
     "bn.js": "^4.11.8"
