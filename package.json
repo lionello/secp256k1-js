@@ -1,6 +1,6 @@
 {
   "name": "@trustedkey/secp256r1-js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Pure JS implementation of secp256r1 signing, verification, recovery ECDSA.",
   "main": "src/secp256r1.js",
   "scripts": {

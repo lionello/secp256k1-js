@@ -160,7 +160,7 @@
     }
 
     function isValidPoint(x, y) {
-        const yy = addmod(mulmod(mulmod(x, x, P), x, P), B, P)
+        const yy = addmod(mulmod(addmod(mulmod(x, x, P), A, P), x, P), B, P)
         return yy.eq(mulmod(y, y, P))
     }
 
@@ -169,9 +169,9 @@
     }
 
     function decompressKey(x, yBit) {
-        let redP = BN.red('k256');
+        let redP = BN.mont(P);
         x = x.toRed(redP)
-        const y = x.redMul(x).redMul(x).redAdd(B.toRed(redP)).redSqrt()
+        const y = x.redMul(x).redAdd(A.toRed(redP)).redMul(x).redAdd(B.toRed(redP)).redSqrt()
         const sign = y.testn(0)
         return (sign != yBit ? y.redNeg() : y).fromRed()
     }
