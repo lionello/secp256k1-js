@@ -1,4 +1,5 @@
 # secp256r1-js
+[![CircleCI](https://circleci.com/gh/trustedkey/secp256r1-js.svg?style=svg)](https://circleci.com/gh/trustedkey/secp256r1-js)
 
 Pure JS implementation of secp256r1 signing, verification, recovery ECDSA.
 
