@@ -50,7 +50,7 @@ Include this library and [bn.js](https://github.com/indutny/bn.js/)
 ### Example
 ```javascript
 // Generating private key
-const privateKeyBuf = window.crypto.getRandomValues(new Uint8Array(320))
+const privateKeyBuf = window.crypto.getRandomValues(new Uint8Array(32))
 const privateKey = Secp256k1.uint256(privateKeyBuf, 16)
 
 // Generating public key
