@@ -2,6 +2,9 @@
   "name": "@enumatech/secp256k1-js",
   "version": "1.0.0",
   "description": "Pure JS implementation of secp256k1 signing, verification, recovery ECDSA.",
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "main": "src/secp256k1.js",
   "scripts": {
     "test": "mocha test"
