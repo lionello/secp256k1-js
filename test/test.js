@@ -51,7 +51,7 @@ describe('secp256k1', () => {
         Assert.ok(/^[0-9a-f]{64}$/.test(sig.s), 'sig.s is not a hex string')
         Assert.ok(sig.v===0 || sig.v===1, 'sig.v is not a 0 or 1')
         if (Secp256k1Node) {
-            const success = Secp256k1Node.verify(B(z), Buffer.concat([B(sig.r), B(sig.s)]), Buffer.concat([Buffer('\04'), B(pubX), B(pubY)]))
+            const success = Secp256k1Node.verify(B(z), Buffer.concat([B(sig.r), B(sig.s)]), Buffer.concat([Buffer.from('\04'), B(pubX), B(pubY)]))
             Assert.ok(success, JSON.stringify(sig))
         }
     })
@@ -59,22 +59,31 @@ describe('secp256k1', () => {
     it('has recovery bit', () => {
         const sig = Secp256k1.ecsign(d, z)
         if (Secp256k1Node) {
-            const success = Secp256k1Node.verify(B(z), Buffer.concat([B(sig.r), B(sig.s)]), Buffer.concat([Buffer('\04'), B(pubX), B(pubY)]))
+            const success = Secp256k1Node.verify(B(z), Buffer.concat([B(sig.r), B(sig.s)]), Buffer.concat([Buffer.from('\04'), B(pubX), B(pubY)]))
             Assert.ok(success, JSON.stringify(sig))
             const Q = Secp256k1Node.recover(B(z), Buffer.concat([B(sig.r), B(sig.s)]), sig.v, false)
             Assert.deepStrictEqual({x: Q.toString('hex').substr(2,64), y: Q.toString('hex').slice(-64)}, {x: pubX.toString(16), y: pubY.toString(16)})
         }
     })
 
-    it('can verify self', () =>  {
+    it('can verify ours', () =>  {
         const sig = Secp256k1.ecsign(d, z)
         Assert.ok(Secp256k1.ecverify(pubX, pubY, Secp256k1.uint256(sig.r,16), Secp256k1.uint256(sig.s,16), z))
+    })
+
+    it('can verify known sig', () =>  {
+        Assert.ok(Secp256k1.ecverify(pubX, pubY, Secp256k1.uint256(r,16), Secp256k1.uint256(s,16), z))
     })
 
     it('can verify fff...', () =>  {
         const z = Secp256k1.uint256("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 16)
         const sig = Secp256k1.ecsign(d, z)
         Assert.ok(Secp256k1.ecverify(pubX, pubY, Secp256k1.uint256(sig.r,16), Secp256k1.uint256(sig.s,16), z))
+    })
+
+    it('cannot sign 000...', () =>  {
+        const z = Secp256k1.uint256("0000000000000000000000000000000000000000000000000000000000000000", 16)
+        Assert.throws(() => Secp256k1.ecsign(d, z), "assertion failed: z must not be 0")
     })
 
     it('can verify other sig', () => {
@@ -84,6 +93,14 @@ describe('secp256k1', () => {
             s = sig.signature.toString('hex').slice(-64)
         }
         Assert.ok(Secp256k1.ecverify(pubX, pubY, Secp256k1.uint256(r,16), Secp256k1.uint256(s,16), z))
+    })
+
+    it('verify fails if r=0', () => {
+        Assert.isFalse(Secp256k1.ecverify(pubX, pubY, Secp256k1.uint256(0), Secp256k1.uint256(s,16), z))
+    })
+
+    it('verify fails if s=0', () => {
+        Assert.isFalse(Secp256k1.ecverify(pubX, pubY, Secp256k1.uint256(r,16), Secp256k1.uint256(0), z))
     })
 
     it('can recover other sig', () => {
@@ -97,9 +114,30 @@ describe('secp256k1', () => {
         Assert.deepStrictEqual(Q, {x: pubX.toString(16), y: pubY.toString(16)})
     })
 
-    it('can recover self', () =>  {
+    it('can recover ours', () =>  {
         const sig = Secp256k1.ecsign(d, z)
         const Q = Secp256k1.ecrecover(sig.v, Secp256k1.uint256(sig.r,16), Secp256k1.uint256(sig.s,16), z)
         Assert.deepStrictEqual(Q, {x: pubX.toString(16), y: pubY.toString(16)})
+    })
+
+    it('can recover known sig', () =>  {
+        const Q = Secp256k1.ecrecover(v, Secp256k1.uint256(r,16), Secp256k1.uint256(s,16), z)
+        Assert.deepStrictEqual(Q, {x: pubX.toString(16), y: pubY.toString(16)})
+    })
+
+    it('recover fails if r=0', () => {
+        Assert.throws(() => Secp256k1.ecrecover(v, Secp256k1.uint256(0), Secp256k1.uint256(s,16), z), "assertion failed: sigr must not be 0")
+    })
+
+    it('recover fails if s=0', () => {
+        Assert.throws(() => Secp256k1.ecrecover(v, Secp256k1.uint256(r,16), Secp256k1.uint256(0), z), "assertion failed: sigs must not be 0")
+    })
+
+    it('recover fails if recId<0', () => {
+        Assert.throws(() => Secp256k1.ecrecover(-1, Secp256k1.uint256(r,16), Secp256k1.uint256(s,16), z), "assertion failed: recId must be 0..3")
+    })
+
+    it('recover fails if recId>3', () => {
+        Assert.throws(() => Secp256k1.ecrecover(4, Secp256k1.uint256(r,16), Secp256k1.uint256(s,16), z), "assertion failed: recId must be 0..3")
     })
 })

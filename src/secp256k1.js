@@ -70,7 +70,15 @@
         return JtoA(PUBinJ)
     }
 
+    function assert(cond, msg) {
+        if (!cond) {
+            throw Error("assertion failed: " + msg)
+        }
+    }
+
     function ecsign(d, z) {
+        assert(d != 0, "d must not be 0")
+        assert(z != 0, "z must not be 0")
         while (true) {
             const k = rnd(P)
             const R = mulG(k)
@@ -182,6 +190,9 @@
     }
 
     function ecrecover(recId, sigr, sigs, message) {
+        assert(recId >= 0 && recId <= 3, "recId must be 0..3")
+        assert(sigr != 0, "sigr must not be 0")
+        assert(sigs != 0, "sigs must not be 0")
         // 1.0 For j from 0 to h   (h == recId here and the loop is outside this function)
         //   1.1 Let x = r + jn
         const x = addmod(uint256(sigr), P.muln(recId >> 1), P)
@@ -227,6 +238,9 @@
     }
 
     function ecverify (Qx, Qy, sigr, sigs, z) {
+        if (sigs == 0 || sigr == 0) {
+            return false
+        }
         const w = invmod(sigs, N)
         const u1 = mulmod(z, w, N)
         const u2 = mulmod(sigr, w, N)
