@@ -19,7 +19,7 @@
   "homepage": "https://github.com/enumatech/secp256k1-js#readme",
   "devDependencies": {
     "chai": "^4.1.2",
-    "mocha": "^5.1.1",
+    "mocha": "^10.0.0",
     "secp256k1": "^3.5.0"
   },
   "dependencies": {
