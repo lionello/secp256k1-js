@@ -44,7 +44,7 @@ Include this library and [bn.js](https://github.com/indutny/bn.js/)
 
 ```html
 <script src="https://unpkg.com/bn.js@4.11.8/lib/bn.js" type="text/javascript"></script>
-<script src="https://unpkg.com/@lionello/secp256k1-js@1.0.0/src/secp256k1.js" type="text/javascript"></script>
+<script src="https://unpkg.com/@lionello/secp256k1-js@1.1.0/src/secp256k1.js" type="text/javascript"></script>
 ```
 
 ### Example
