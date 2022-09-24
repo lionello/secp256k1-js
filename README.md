@@ -1,5 +1,5 @@
 # secp256k1-js
-[![CircleCI](https://circleci.com/gh/enumatech/secp256k1-js.svg?style=svg)](https://circleci.com/gh/enumatech/secp256k1-js)
+[![CircleCI](https://circleci.com/gh/lionello/secp256k1-js.svg?style=svg)](https://circleci.com/gh/lionello/secp256k1-js)
 
 Pure JS implementation of secp256k1 signing, verification, recovery ECDSA.
 
@@ -8,7 +8,7 @@ The code works as-is both in browsers and NodeJS, without the need of a bundler.
 ## Node.js Usage
 
 ```sh
-npm install @enumatech/secp256k1-js
+npm install @lionello/secp256k1-js
 ```
 
 ### Example
@@ -16,7 +16,7 @@ npm install @enumatech/secp256k1-js
 ```javascript
 const crypto = require('crypto')
 const assert = require('assert')
-const Secp256k1 = require('@enumatech/secp256k1-js')
+const Secp256k1 = require('@lionello/secp256k1-js')
 
 // Generating private key
 const privateKeyBuf = crypto.randomBytes(32)
@@ -44,7 +44,7 @@ Include this library and [bn.js](https://github.com/indutny/bn.js/)
 
 ```html
 <script src="https://unpkg.com/bn.js@4.11.8/lib/bn.js" type="text/javascript"></script>
-<script src="https://unpkg.com/@enumatech/secp256k1-js@1.0.0/src/secp256k1.js" type="text/javascript"></script>
+<script src="https://unpkg.com/@lionello/secp256k1-js@1.0.0/src/secp256k1.js" type="text/javascript"></script>
 ```
 
 ### Example
