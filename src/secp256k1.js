@@ -1,37 +1,89 @@
 (function () {
     if (typeof module !== 'undefined') {
-        BN = module.require('bn.js')
         randomBytes = module.require('crypto').randomBytes
     } else {
         // bn.js must have been included by the main html file
         randomBytes = length => window.crypto.getRandomValues(new Uint8Array(length))
         window.Secp256k1 = exports = {}
     }
+    // Convert an object to BigInt.
+    function uint256(num, base = 10) {
+        const isTypedArray = ArrayBuffer.isView(num)  && !(num instanceof DataView);
+        const isBuffer = typeof Buffer !== 'undefined' && Buffer.isBuffer(num);
+        if (Array.isArray(num) || isTypedArray || isBuffer) {
+            if (num.length === 0) {
+                return BigInt(0);
+            }
+            const byteArray = [...num]; // Copy
+            const hexStr = byteArray
+                .map((byte) => byte.toString(16).padStart(2, "0"))
+                .join("");
+            return BigInt("0x" + hexStr);
+        }
 
-    function uint256(x, base) {
-        return new BN(x, base)
+        let isNegative = false;
+
+        const type = typeof num;
+        if (type === "number") {
+            assert(num < 0x20000000000000n);
+        }
+
+        num = num.toString().replace(/\s+/g, "");
+        if (num.startsWith("-")) {
+            isNegative = true;
+            num = num.slice(1);
+        }
+        let prefix = "";
+        switch (base) {
+            case 2:
+                prefix = "0b";
+                break;
+            case 8:
+                prefix = "0o";
+                break;
+            case "hex":
+            case 16:
+                prefix = "0x";
+                break;
+            case 10:
+            default:
+                break;
+        }
+        let res = BigInt(`${prefix}${num}`);
+        if (isNegative) {
+            res = -res;
+        }
+        return res;
+    }
+
+    function umod(num, mod) {
+        let result = num % mod;
+        if (result >= 0n) {
+            return result;
+        }
+        const absMod = (mod < 0n) ? -mod : mod;
+        return result + absMod;
     }
 
     function rnd(P) {
-        return uint256(randomBytes(32)).umod(P)//TODO red
+        return umod(uint256(randomBytes(32)), P)
     }
 
-    const A  = uint256(0)
-    const B  = uint256(7)
-    const GX = uint256("79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798", 16)
-    const GY = uint256("483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8", 16)
-    const P  = uint256("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F", 16)
-    const N  = uint256("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", 16)
-    //const RED = BN.red(P)
-    const _0 = uint256(0)
-    const _1 = uint256(1)
-
+    const A = 0n
+    const B = 7n
+    const GX = 0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798n
+    const GY = 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8n
+    const P = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2Fn // K256
+    const N = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141n
+    const _0 = 0n
+    const _1 = 1n
+ 
     // function for elliptic curve multiplication in jacobian coordinates using Double-and-add method
     function ecmul(_p, _d) {
-        let R = [_0,_0,_0]
+        let R = [_0, _0, _0]
 
         //return (0,0) if d=0 or (x1,y1)=(0,0)
-        if (_d == 0 || ((_p[0] == 0) && (_p[1] == 0)) ) {
+        if (_d == 0 || ((_p[0] == 0) && (_p[1] == 0))) {
             return R
         }
         let T = [
@@ -40,28 +92,47 @@
             _p[2], //z-coordinate temp
         ]
 
-        const d = _d.clone()
+        let d = _d
         while (d != 0) {
-            if (d.testn(0)) {  //if last bit is 1 add T to result
-                R = ecadd(T,R)
+            if (d & 1n) {  //if last bit is 1 add T to result
+                R = ecadd(T, R)
             }
             T = ecdouble(T);    //double temporary coordinates
-            d.iushrn(1);      //"cut off" last bit
+            d >>= 1n;      //"cut off" last bit
         }
 
         return R
     }
 
     function mulmod(a, b, P) {
-        return a.mul(b).umod(P)//TODO red
+        return umod(a * b, P)
     }
 
     function addmod(a, b, P) {
-        return a.add(b).umod(P)//TODO red
+        return umod(a + b, P)
     }
+    function egcd(a, b) {
+        assert(b != 0n)
+        a = (a < 0n) ? -a : a;
+        b = (b < 0n) ? -b : b;
 
+        let [x, y, u, v] = [1n, 0n, 0n, 1n];
+
+        while (b !== 0n) {
+            let q = a / b;
+            [a, b] = [b, a % b];
+            [x, u] = [u, x - u * q];
+            [y, v] = [v, y - v * q];
+        }
+
+        return {
+            gcd: a,
+            a: x,
+            b: y,
+        };
+    }
     function invmod(a, P) {
-        return a.invm(P)//TODO redq
+        return umod(egcd(a, P).a, P)
     }
 
     function mulG(k) {
@@ -86,8 +157,8 @@
             const s = mulmod(invmod(k, N), addmod(z, mulmod(R[0], d, N), N), N)
             if (s == 0) continue
             //FIXME: why do I need this
-            if (s.testn(255)) continue
-            return {r: toHex(R[0]), s: toHex(s), v: R[1].testn(0) ? 1 : 0}
+            if (s & (1n << 255n)) continue
+            return { r: toHex(R[0]), s: toHex(s), v: (R[1] & 1n) ? 1 : 0 }
         }
     }
 
@@ -106,20 +177,20 @@
         }
 
         const z2 = mulmod(_p[2], _p[2], P)
-        const m = addmod(mulmod(A, mulmod(z2, z2, P), P), mulmod(uint256(3), mulmod(_p[0], _p[0], P), P), P)
+        const m = addmod(mulmod(A, mulmod(z2, z2, P), P), mulmod(3n, mulmod(_p[0], _p[0], P), P), P)
         const y2 = mulmod(_p[1], _p[1], P)
-        const s = mulmod(uint256(4), mulmod(_p[0], y2, P), P)
+        const s = mulmod(4n, mulmod(_p[0], y2, P), P)
 
-        const x = addmod(mulmod(m, m, P), negmod(mulmod(s, uint256(2), P), P), P)
+        const x = addmod(mulmod(m, m, P), negmod(mulmod(s, 2n, P), P), P)
         return [
             x,
-            addmod(mulmod(m, addmod(s, negmod(x, P), P), P), negmod(mulmod(uint256(8), mulmod(y2, y2, P), P), P), P),
-            mulmod(uint256(2), mulmod(_p[1], _p[2], P), P)
+            addmod(mulmod(m, addmod(s, negmod(x, P), P), P), negmod(mulmod(8n, mulmod(y2, y2, P), P), P), P),
+            mulmod(2n, mulmod(_p[1], _p[2], P), P)
         ]
     }
 
     function negmod(a, P) {
-        return P.sub(a)
+        return P - a
     }
 
     // point addition for elliptic curve in jacobian coordinates
@@ -136,8 +207,8 @@
         let u2 = mulmod(_q[0], z2, P)
         let s2 = mulmod(_q[1], mulmod(z2, _p[2], P), P)
 
-        if (u1.eq(u2)) {
-            if (!s1.eq(s2)) {
+        if (u1 == u2) {
+            if (s1 != s2) {
                 //return point at infinity
                 return [_1, _1, _0]
             }
@@ -151,7 +222,7 @@
         const t2 = mulmod(u1, z2, P)
         z2 = mulmod(u2, z2, P)
         s2 = addmod(s2, negmod(s1, P), P)
-        const x = addmod(addmod(mulmod(s2, s2, P), negmod(z2, P), P), negmod(mulmod(uint256(2), t2, P), P), P)
+        const x = addmod(addmod(mulmod(s2, s2, P), negmod(z2, P), P), negmod(mulmod(2n, t2, P), P), P)
         return [
             x,
             addmod(mulmod(s2, addmod(t2, negmod(x, P), P), P), negmod(mulmod(s1, z2, P), P), P),
@@ -169,33 +240,52 @@
 
     function isValidPoint(x, y) {
         const yy = addmod(mulmod(mulmod(x, x, P), x, P), B, P)
-        return yy.eq(mulmod(y, y, P))
+        return yy === mulmod(y, y, P)
     }
 
     function toHex(bn) {
         return ('00000000000000000000000000000000000000000000000000000000000000000000000000000000' + bn.toString(16)).slice(-64)
     }
 
+    function powmod(base, exponent, P) {
+        let result = 1n;
+        base = base % P;
+
+        while (exponent > 0n) {
+            if (exponent & 1n) {
+                result = (result * base) % P;
+            }
+            exponent = exponent >> 1n;
+            base = (base * base) % P;
+        }
+
+        return result;
+    }
+
     function decompressKey(x, yBit) {
-        let redP = BN.red('k256');
-        x = x.toRed(redP)
-        const y = x.redMul(x).redMul(x).redAdd(B.toRed(redP)).redSqrt()
-        const sign = y.testn(0)
-        return (sign != yBit ? y.redNeg() : y).fromRed()
+        const xCubed = (x * x % P) * x % P;
+        const ySquared = (xCubed + B) % P;
+        // Simpler modular square root.
+        // This works because P ≡ 3 (mod 4)
+        const exp = (P + 1n) / 4n;
+        const y = powmod(ySquared, exp, P);
+        const sign = y & 1n;
+        return (sign != yBit ? - y : y);
     }
 
     function generatePublicKeyFromPrivateKeyData(pk) {
         const p = mulG(pk)
-        return {x: toHex(p[0]), y: toHex(p[1])}
+        return { x: toHex(p[0]), y: toHex(p[1]) }
     }
 
     function ecrecover(recId, sigr, sigs, message) {
         assert(recId >= 0 && recId <= 3, "recId must be 0..3")
         assert(sigr != 0, "sigr must not be 0")
         assert(sigs != 0, "sigs must not be 0")
+        recId = uint256(recId)
         // 1.0 For j from 0 to h   (h == recId here and the loop is outside this function)
         //   1.1 Let x = r + jn
-        const x = addmod(uint256(sigr), P.muln(recId >> 1), P)
+        const x = addmod(uint256(sigr), P * (recId >> 1n), P)
         //   1.2. Convert the integer x to an octet string X of length mlen using the conversion routine
         //        specified in Section 2.3.7, where mlen = ⌈(log2 p)/8⌉ or mlen = ⌈m/8⌉.
         //   1.3. Convert the octet string (16 set binary digits)||X to an elliptic curve point R using the
@@ -203,13 +293,13 @@
         //        do another iteration of Step 1.
         //
         // More concisely, what these points mean is to use X as a compressed public key.
-        if (x.gte(P)) {
+        if (x >= P) {
             // Cannot have point co-ordinates larger than this as everything takes place modulo Q.
             return null
         }
         // Compressed keys require you to know an extra bit of data about the y-coord as there are two possibilities.
         // So it's encoded in the recId.
-        const y = decompressKey(x, (recId & 1) == 1)
+        const y = decompressKey(x, (recId & 1n) == 1)
         //   1.4. If nR != point at infinity, then do another iteration of Step 1 (callers responsibility).
         // if (!R.mul(N).isInfinity())
         //     return null
@@ -234,10 +324,10 @@
         const G = AtoJ(GX, GY)
         const qinJ = ecadd(ecmul(G, eNegrInv), ecmul(R, srInv))
         const p = JtoA(qinJ)
-        return {x: toHex(p[0]), y: toHex(p[1])}
+        return { x: toHex(p[0]), y: toHex(p[1]) }
     }
 
-    function ecverify (Qx, Qy, sigr, sigs, z) {
+    function ecverify(Qx, Qy, sigr, sigs, z) {
         if (sigs == 0 || sigr == 0) {
             return false
         }
@@ -248,7 +338,7 @@
         const G = AtoJ(GX, GY)
         const RinJ = ecadd(ecmul(G, u1), ecmul(Q, u2))
         const r = JtoA(RinJ)
-        return sigr.eq(r[0])
+        return sigr == r[0]
     }
 
     exports.uint256 = uint256
